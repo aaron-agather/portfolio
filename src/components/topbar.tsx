@@ -120,21 +120,21 @@ export function Topbar() {
     <div className="topbar"
       ref={topbarRef}
       style={{
-        background: "black",
+        background: "transparent",
         padding: 50,
         color: "white",
         display: "flex",
         justifyContent: "center",
         gap: 50,
         position: "relative",
-        overflow: "hidden",
+        // overflow: "hidden",
         borderTopLeftRadius: 0,
         borderTopRightRadius: 0,
         borderBottomLeftRadius: 25,
         borderBottomRightRadius: 25,
-        borderBottomColor: "white",
-        borderBottomWidth: 2,
-        borderBottomStyle: "solid"
+        // borderBottomColor: "white",
+        // borderBottomWidth: 2,
+        // borderBottomStyle: "solid"
         // zIndex: -2
       }}>
       <div
