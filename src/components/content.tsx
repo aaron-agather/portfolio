@@ -1,6 +1,11 @@
-import React, { ReactNode, useEffect, useRef } from "react";
+import React, { ReactNode, useEffect, useLayoutEffect, useRef } from "react";
 import * as THREE from "three";
 import gsap from "gsap"
+import { useGSAP } from "@gsap/react";
+import { SplitText } from "gsap/SplitText";
+import { ScrambleTextPlugin } from "gsap/ScrambleTextPlugin";
+
+gsap.registerPlugin(useGSAP,SplitText,ScrambleTextPlugin);
 
 function Card({ children }: { children: ReactNode }) {
   return (
@@ -26,10 +31,43 @@ function SkillLine({
 }: {
   skill: string;
   amount: number;
-}) {
+  }) {
+
+  const skillRef = useRef<HTMLDivElement>(null);
+
+  if (amount > 10) {
+    amount = 10
+  }
+
+  useGSAP(() => {
+
+    if (!skillRef.current) return;
+
+    console.log("GSAP START:", skill);
+
+    let splitSkillText = SplitText.create(skillRef.current, { type: "chars, words" })
+    let textanim = gsap.timeline({})
+    textanim.to(splitSkillText.chars, {
+      color: "red", stagger: .05, rotateZ: 180
+    }).to({}, 2, {}).to(splitSkillText.chars, {
+      color: "white", stagger: .05, rotateZ: 360
+    }).set(splitSkillText.chars, { rotateZ: 0 })
+
+    return () => {
+          console.log("GSAP CLEANUP:", skill);
+
+          textanim.kill();
+          splitSkillText.revert();
+        };
+  }, [])
+
   return (
-    <div>
-      <div>{skill}</div>
+    <div style={{
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+    }}>
+      <div ref={skillRef}>{skill}</div>
 
       <div
         style={{
@@ -45,8 +83,18 @@ function SkillLine({
             width: amount * 10,
             fontSize: 12,
             color: "black",
+            zIndex: 1,
+            position: "relative"
           }}
         >
+        </div>
+        <div style={{
+          width: 100,
+          zIndex: 5,
+          position: "relative",
+          top: -20,
+          color: "black"
+        }}>
           {amount * 10}%
         </div>
       </div>
@@ -57,7 +105,7 @@ function SkillLine({
 function ThreeDPart() {
   const areaRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const area = areaRef.current;
 
     if (!area) return;
@@ -87,14 +135,14 @@ function ThreeDPart() {
     area.appendChild(renderer.domElement);
 
     // Test cube
-    const geometry = new THREE.SphereGeometry(1.5, 50, 16);
+    const geometry = new THREE.OctahedronGeometry(2, 0);
 
     const colors: number[] = [];
     const position = geometry.attributes.position;
 
-    const topColor = new THREE.Color(0xff0000);    // red
-    const middleColor = new THREE.Color(0x800080); // purple
-    const bottomColor = new THREE.Color(0x0000ff); // blue
+    const topColor = new THREE.Color("darkgray");    // red
+    const middleColor = new THREE.Color("brown"); // purple
+    const bottomColor = new THREE.Color("pink"); // blue
 
     for (let i = 0; i < position.count; i++) {
       const y = position.getY(i);
@@ -121,12 +169,27 @@ function ThreeDPart() {
       vertexColors: true,
     });
 
+    const edge = new THREE.EdgesGeometry(geometry, 2)
+
     const cube = new THREE.Mesh(geometry, material);
 
-    scene.add(cube);
+    // scene.add(cube);
 
+    var lineColor = new THREE.Color("blue")
+    const lineMaterial = new THREE.LineBasicMaterial({color: lineColor})
 
-    gsap.to(cube.rotation, { y: 10, repeat: -1, duration: 10})
+    const line = new THREE.Line(
+      edge, lineMaterial
+    )
+
+    scene.add(line)
+
+    const animation = gsap.timeline()
+    animation.timeScale(.1)
+
+    animation.to(line.rotation, { x: .2 })
+    animation.to(lineMaterial.color, { r: 10, b: 0, g: 0 })
+    animation.to(line.rotation, { y: 360, duration: 60, repeat: -1 })
 
     renderer.setAnimationLoop(() => {renderer.render(scene, camera)});
 
@@ -155,26 +218,37 @@ function ThreeDPart() {
 
 export function Content() {
   return (
-    <div style={{display: "flex", flexDirection: "row", justifyContent: "center"}}>
-      <div
-        style={{
-          display: "grid",
-          justifyContent: "center",
-          alignItems: "center",
-          paddingTop: 20,
-        }}
-      >
-        <Card>
-          <div>Skills</div>
+    <>
+      <div style={{ height: "20%", width: "100%" }}></div>
+     <div style={{ display: "flex", flexDirection: "row", justifyContent: "center" }}>
+       <div
+         style={{
+           display: "grid",
+           justifyContent: "center",
+           alignItems: "center",
+           paddingTop: 20,
+           gap: 10
+         }}
+        >
+         <Card>
+           <div>Skills</div>
 
-          <SkillLine skill="HTML" amount={8} />
-          <SkillLine skill="CSS" amount={8} />
-        </Card>
-      </div>
+           <SkillLine skill="HTML" amount={8} />
+           <SkillLine skill="CSS" amount={8} />
+           <SkillLine skill="JS" amount={5} />
+         </Card>
+         <Card>
+           <div>Languages</div>
+           <SkillLine skill="German (Native)" amount={11} />
+           <SkillLine skill="English (Fluent)" amount={10} />
+           <SkillLine skill="Danish (Intermediate)" amount={5} />
+         </Card>
+       </div>
 
-      <div style={{ background: "red", justifyContent: "end", alignItems: "end" }}>
-        <ThreeDPart />
-      </div>
-    </div>
+       <div style={{ justifyContent: "center", alignItems: "center" }}>
+         <ThreeDPart />
+       </div>
+     </div>
+    </>
   );
 }

@@ -114,10 +114,27 @@ export function Topbar() {
     };
   }, []);
 
+  Observer.create({
+    target: window,
+    type: "wheel",
+    onChangeY: (self) => {
+      window.onscroll = function (){
+        console.info(window.scrollY);
+        // if (window.scrollY > 0) {
+        //   gsap.to(".topbar", {position: "fixed"})
+        // }
+        // else {
+        //   gsap.to(".topbar", {position: "relative"})
+        // }
+      }
+    },
+  })
+
 
 
   return (
     <div className="topbar"
+      id="originalTopbar"
       ref={topbarRef}
       style={{
         background: "transparent",
@@ -126,16 +143,18 @@ export function Topbar() {
         display: "flex",
         justifyContent: "center",
         gap: 50,
-        position: "relative",
+        position: "fixed",
+        width: "100%",
+        backdropFilter: "blur(15px)",
         // overflow: "hidden",
         borderTopLeftRadius: 0,
         borderTopRightRadius: 0,
         borderBottomLeftRadius: 25,
         borderBottomRightRadius: 25,
-        // borderBottomColor: "white",
-        // borderBottomWidth: 2,
-        // borderBottomStyle: "solid"
-        // zIndex: -2
+        borderBottomColor: "color-mix(in oklab, white, transparent 90%)",
+        borderBottomWidth: 2,
+        borderBottomStyle: "solid",
+        zIndex: 500
       }}>
       <div
         ref={followRef}

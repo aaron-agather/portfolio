@@ -10,6 +10,8 @@ function App() {
     <div className="App" style={{ background: "black", height: "100vh" }}>
       <BackgroundColorEffect />
       <Topbar />
+      {/*{/*<Content />*/}
+      {/*<Content />*/}
       <Content />
 
     </div>
